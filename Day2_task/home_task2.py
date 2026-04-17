@@ -1,0 +1,297 @@
+#Product Review Sentiment Analyzer
+import math
+import re
+import sys
+from collections import Counter, defaultdict
+from pathlib import Path
+
+CURRENT_DIR = Path(__file__).resolve().parent
+sys.path = [path for path in sys.path if Path(path or ".").resolve() != CURRENT_DIR]
+
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+
+
+REVIEW_DATASET = [
+    {"text": "Absolutely loved this phone!!! Battery backup is amazing :)", "label": "positive"},
+    {"text": "Worst purchase ever... screen cracked in 2 days!!!", "label": "negative"},
+    {"text": "Super fast delivery, neat packaging, and excellent quality.", "label": "positive"},
+    {"text": "The charger stopped working after a week, very disappointing.", "label": "negative"},
+    {"text": "I'm so happy with this product, works perfectly for daily use.", "label": "positive"},
+    {"text": "Terrible sound quality and lots of annoying noise during calls.", "label": "negative"},
+    {"text": "Worth every rupee. Smooth performance and stylish design!", "label": "positive"},
+    {"text": "Not worth the money :( the material feels cheap and fragile.", "label": "negative"},
+    {"text": "Excellent camera clarity even in low light, highly recommended.", "label": "positive"},
+    {"text": "Waste of money, the app keeps crashing again and again.", "label": "negative"},
+    {"text": "Setup was easy, instructions were clear, and the product feels premium.", "label": "positive"},
+    {"text": "Very bad customer support. Nobody replied to my emails.", "label": "negative"},
+    {"text": "Five stars from me!!! Comfortable, reliable, and easy to clean.", "label": "positive"},
+    {"text": "The item arrived broken <br> and the replacement process was painful.", "label": "negative"},
+    {"text": "Really impressed with the build quality and smooth finish.", "label": "positive"},
+    {"text": "Buttons are hard to press and the device heats up quickly.", "label": "negative"},
+    {"text": "Happy with the purchase. Great value and quick charging.", "label": "positive"},
+    {"text": "Packaging looked nice, but the product itself is useless.", "label": "negative"},
+    {"text": "Love it!!! Looks elegant and performs better than expected.", "label": "positive"},
+    {"text": "Horrible experience, refund still not processed after many calls.", "label": "negative"},
+]
+
+STOP_WORDS = {
+    "a",
+    "after",
+    "am",
+    "an",
+    "and",
+    "are",
+    "as",
+    "at",
+    "but",
+    "for",
+    "from",
+    "i",
+    "im",
+    "in",
+    "is",
+    "it",
+    "my",
+    "not",
+    "of",
+    "the",
+    "this",
+    "to",
+    "up",
+    "very",
+    "was",
+    "with",
+}
+
+
+class ReviewPreprocessor:
+    def __init__(self):
+        self.stemmer = PorterStemmer()
+        self.lemmatizer = WordNetLemmatizer()
+
+    def clean_text(self, text):
+        text = re.sub(r"<.*?>", " ", text)
+        text = re.sub(r"http\S+|www\.\S+", " ", text)
+        text = text.lower()
+        text = re.sub(r"[^a-z\s]", " ", text)
+        text = re.sub(r"\s+", " ", text).strip()
+        return text
+
+    def tokenize(self, text):
+        return text.split()
+
+    def remove_stop_words(self, tokens):
+        return [token for token in tokens if token not in STOP_WORDS]
+
+    def stem_tokens(self, tokens):
+        return [self.stemmer.stem(token) for token in tokens]
+
+    def lemmatize_tokens(self, tokens):
+        processed = []
+        for token in tokens:
+            try:
+                processed.append(self.lemmatizer.lemmatize(token))
+            except LookupError:
+                processed.append(token)
+        return processed
+
+    def preprocess(self, text):
+        cleaned_text = self.clean_text(text)
+        tokens = self.tokenize(cleaned_text)
+        filtered_tokens = self.remove_stop_words(tokens)
+        return {
+            "cleaned_text": cleaned_text,
+            "filtered_tokens": filtered_tokens,
+            "stemmed_tokens": self.stem_tokens(filtered_tokens),
+            "lemmatized_tokens": self.lemmatize_tokens(filtered_tokens),
+        }
+
+
+class BagOfWordsVectorizer:
+    def __init__(self):
+        self.vocabulary = {}
+
+    def fit(self, documents):
+        words = sorted({word for document in documents for word in document})
+        self.vocabulary = {word: index for index, word in enumerate(words)}
+
+    def transform(self, documents):
+        vectors = []
+        for document in documents:
+            vector = [0] * len(self.vocabulary)
+            for word in document:
+                if word in self.vocabulary:
+                    vector[self.vocabulary[word]] += 1
+            vectors.append(vector)
+        return vectors
+
+    def fit_transform(self, documents):
+        self.fit(documents)
+        return self.transform(documents)
+
+
+class MultinomialNaiveBayes:
+    def __init__(self):
+        self.class_priors = {}
+        self.word_counts = {}
+        self.total_words = {}
+        self.vocab_size = 0
+
+    def fit(self, features, labels):
+        self.vocab_size = len(features[0]) if features else 0
+        class_counts = Counter(labels)
+        total_docs = len(labels)
+
+        self.word_counts = defaultdict(lambda: [0] * self.vocab_size)
+        self.total_words = defaultdict(int)
+
+        for row, label in zip(features, labels):
+            self.class_priors[label] = class_counts[label] / total_docs
+            for index, count in enumerate(row):
+                self.word_counts[label][index] += count
+                self.total_words[label] += count
+
+    def predict_one(self, row):
+        best_label = None
+        best_score = float("-inf")
+
+        for label, prior in self.class_priors.items():
+            score = math.log(prior)
+            for index, count in enumerate(row):
+                if count == 0:
+                    continue
+                probability = (
+                    self.word_counts[label][index] + 1
+                ) / (self.total_words[label] + self.vocab_size)
+                score += count * math.log(probability)
+
+            if score > best_score:
+                best_score = score
+                best_label = label
+
+        return best_label
+
+    def predict(self, features):
+        return [self.predict_one(row) for row in features]
+
+
+def accuracy_score(actual, predicted):
+    matches = sum(1 for truth, guess in zip(actual, predicted) if truth == guess)
+    return matches / len(actual) if actual else 0.0
+
+
+def split_dataset(dataset, train_ratio=0.7):
+    grouped = defaultdict(list)
+    for item in dataset:
+        grouped[item["label"]].append(item)
+
+    train_data = []
+    test_data = []
+
+    for label_items in grouped.values():
+        split_index = max(1, int(len(label_items) * train_ratio))
+        train_data.extend(label_items[:split_index])
+        test_data.extend(label_items[split_index:])
+
+    return train_data, test_data
+
+
+def print_preprocessing_examples(processor, sample_count=3):
+    print("REVIEW CLEANING PIPELINE")
+    print("-" * 55)
+    for item in REVIEW_DATASET[:sample_count]:
+        processed = processor.preprocess(item["text"])
+        print(f"Original     : {item['text']}")
+        print(f"Cleaned      : {processed['cleaned_text']}")
+        print(f"Stop removed : {processed['filtered_tokens']}")
+        print(f"Stemmed      : {processed['stemmed_tokens']}")
+        print(f"Lemmatized   : {processed['lemmatized_tokens']}")
+        print("-" * 55)
+
+
+def build_processed_dataset(processor, mode):
+    key = "stemmed_tokens" if mode == "stemming" else "lemmatized_tokens"
+    processed_dataset = []
+    for item in REVIEW_DATASET:
+        processed = processor.preprocess(item["text"])
+        processed_dataset.append(
+            {"text": item["text"], "label": item["label"], "tokens": processed[key]}
+        )
+    return processed_dataset
+
+
+def evaluate_pipeline(name, dataset):
+    train_data, test_data = split_dataset(dataset)
+    train_documents = [item["tokens"] for item in train_data]
+    train_labels = [item["label"] for item in train_data]
+    test_documents = [item["tokens"] for item in test_data]
+    test_labels = [item["label"] for item in test_data]
+
+    vectorizer = BagOfWordsVectorizer()
+    train_features = vectorizer.fit_transform(train_documents)
+    test_features = vectorizer.transform(test_documents)
+
+    classifier = MultinomialNaiveBayes()
+    classifier.fit(train_features, train_labels)
+    predictions = classifier.predict(test_features)
+    accuracy = accuracy_score(test_labels, predictions)
+
+    print(f"\n{name.upper()} + BOW RESULTS")
+    print("-" * 55)
+    for review, actual, predicted in zip(test_data, test_labels, predictions):
+        print(f"Review      : {' '.join(review['tokens'])}")
+        print(f"Actual      : {actual}")
+        print(f"Predicted   : {predicted}")
+        print("-" * 55)
+
+    return accuracy, vectorizer
+
+
+def print_feature_snapshot(vectorizer, documents, title):
+    print(f"\n{title}")
+    print("-" * 55)
+    sample_vectors = vectorizer.transform(documents[:2])
+    for index, vector in enumerate(sample_vectors, start=1):
+        features = {
+            word: vector[position]
+            for word, position in vectorizer.vocabulary.items()
+            if vector[position] > 0
+        }
+        print(f"Review {index}: {features}")
+
+
+def main():
+    processor = ReviewPreprocessor()
+    print_preprocessing_examples(processor)
+
+    stemmed_dataset = build_processed_dataset(processor, "stemming")
+    lemmatized_dataset = build_processed_dataset(processor, "lemmatization")
+
+    stem_accuracy, stem_vectorizer = evaluate_pipeline("stemming", stemmed_dataset)
+    lemma_accuracy, lemma_vectorizer = evaluate_pipeline("lemmatization", lemmatized_dataset)
+
+    print_feature_snapshot(
+        stem_vectorizer,
+        [item["tokens"] for item in stemmed_dataset],
+        "STEMMING FEATURE SNAPSHOT",
+    )
+    print_feature_snapshot(
+        lemma_vectorizer,
+        [item["tokens"] for item in lemmatized_dataset],
+        "LEMMATIZATION FEATURE SNAPSHOT",
+    )
+
+    print("\nACCURACY COMPARISON")
+    print("-" * 55)
+    print(f"Stemming accuracy     : {stem_accuracy:.2%}")
+    print(f"Lemmatization accuracy: {lemma_accuracy:.2%}")
+    if stem_accuracy > lemma_accuracy:
+        print("Better approach       : Stemming performed better on this dataset.")
+    elif lemma_accuracy > stem_accuracy:
+        print("Better approach       : Lemmatization performed better on this dataset.")
+    else:
+        print("Better approach       : Both approaches achieved the same accuracy.")
+
+
+if __name__ == "__main__":
+    main()

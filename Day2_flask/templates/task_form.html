@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Task{% endblock %}
+
+{% block content %}
+<section class="card form-card">
+    <h1>{{ action }} Task</h1>
+    <p class="subtitle">Fill in the task details below.</p>
+
+    <form method="post" class="form-grid">
+        <label>Title</label>
+        <input type="text" name="title" value="{{ task.title if task else '' }}" placeholder="Task title" required>
+
+        <label>Description</label>
+        <textarea name="description" rows="5" placeholder="Task description">{{ task.description if task else '' }}</textarea>
+
+        <label>Status</label>
+        <select name="status">
+            {% set current_status = task.status if task else 'Pending' %}
+            <option value="Pending" {% if current_status == 'Pending' %}selected{% endif %}>Pending</option>
+            <option value="In Progress" {% if current_status == 'In Progress' %}selected{% endif %}>In Progress</option>
+            <option value="Completed" {% if current_status == 'Completed' %}selected{% endif %}>Completed</option>
+        </select>
+
+        <div class="button-row">
+            <button type="submit" class="btn primary">{{ action }} Task</button>
+            <a href="{{ url_for('dashboard') }}" class="btn">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}
