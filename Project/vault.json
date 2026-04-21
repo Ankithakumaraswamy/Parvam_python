@@ -1,0 +1,25 @@
+{
+  "vault": [
+    {
+      "id": 1,
+      "site": "Gmail",
+      "username": "anki@gmail.com",
+      "password": ">3Y2IYg|7s%h",
+      "strength": "Strong"
+    },
+    {
+      "id": 2,
+      "site": "Instagram",
+      "username": "lifeofankitha",
+      "password": "x_$q^0f8|gNN",
+      "strength": "Strong"
+    },
+    {
+      "id": 3,
+      "site": "instagram",
+      "username": "indhuananda_28",
+      "password": "235",
+      "strength": "Weak"
+    }
+  ]
+}
