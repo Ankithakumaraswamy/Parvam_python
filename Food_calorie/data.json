@@ -1,0 +1,347 @@
+{
+  "users": {
+    "testlight": {
+      "password": "scrypt:32768:8:1$qLLHAoV21uOvCgWx$422e604b674de65fa67d1752148e17cbb2640365869acd38b6b6ef4b96e16f8a442354803fd0aab34d3c19c362ec4ba1ee5234532067f4bf58f76e17e17f3097",
+      "age": 25,
+      "weight": 70.0,
+      "occupation": "active",
+      "workout_frequency": "4-5",
+      "goal": 2940
+    },
+    "John": {
+      "password": "scrypt:32768:8:1$A2PdNByb0nh0CMgd$722fc7d48fcf7d52801e855857794124130d12b1799423392cf5dfdb223309ff9ecd1b161ced6c89fc4dde53ced331a0bd7e034ecf7f8726921454cfce91d8f8",
+      "age": 28,
+      "weight": 83.0,
+      "occupation": "sedentary",
+      "workout_frequency": "0",
+      "goal": 2377
+    },
+    "Teju": {
+      "password": "scrypt:32768:8:1$53ROxwKiqYyB9DBX$fdedc1c478483928ba502613b2c7e1a827d7ec9bd9fa285d252b8832434b53f4b754f51758485a3ba44a19b87eae6272c51a62786a1d9cc7a6e59787c6dca0fc",
+      "age": 20,
+      "weight": 48.0,
+      "occupation": "sedentary",
+      "workout_frequency": "0",
+      "goal": 1382
+    },
+    "Bhavana": {
+      "password": "scrypt:32768:8:1$goSa0lBZJnJpSt4F$a319d7ccae570e6f58c86ed29cdce3e3023b38e0a8d1f2203065824826ab0509c0a0427c9a6948d4136788c288e8988910de3188915f5bc46e666e428a11a8b7",
+      "age": 20,
+      "weight": 62.0,
+      "occupation": "sedentary",
+      "workout_frequency": "1-3",
+      "goal": 2009
+    },
+    "Ankithaa": {
+      "password": "scrypt:32768:8:1$iFIYKkK9XwHGkoWA$cfacb3cd38239e450fadc8f408bd3458a3574589c4750f06e0a60c1dfa9618806e6347e380a4e64e6019b97d0c3bbe76012eca73fe2608a45f47b962c16b1503",
+      "age": 20,
+      "weight": 59.4,
+      "occupation": "sedentary",
+      "workout_frequency": "4-5",
+      "goal": 2067
+    },
+    "LIJHYG": {
+      "password": "scrypt:32768:8:1$4ij5OAPnX7fLAs4J$68c92e7368bf38b6d8cb4cba80d03e9396af2f983c546a7d9892da1df99d9bb17eea1f6cc8bcf2431e08ece07122050d5c3883c82e96e3f736ab58168ebb7026",
+      "age": 45,
+      "weight": 90.0,
+      "occupation": "sedentary",
+      "workout_frequency": "0",
+      "goal": 2502
+    }
+  },
+  "foods": [
+    {
+      "name": "Idli",
+      "calories": 70
+    },
+    {
+      "name": "Apple",
+      "calories": 95
+    },
+    {
+      "name": "Pizza Slice",
+      "calories": 285
+    },
+    {
+      "name": "Oats",
+      "calories": 300
+    },
+    {
+      "name": "Chicken Salad",
+      "calories": 500
+    },
+    {
+      "name": "Chapati",
+      "calories": 400
+    },
+    {
+      "name": "Chicken Breast (100g)",
+      "calories": 165
+    },
+    {
+      "name": "Salmon (100g)",
+      "calories": 208
+    },
+    {
+      "name": "Oats (50g)",
+      "calories": 195
+    },
+    {
+      "name": "Brown Rice (100g)",
+      "calories": 111
+    },
+    {
+      "name": "White Rice (100g)",
+      "calories": 130
+    },
+    {
+      "name": "Broccoli (100g)",
+      "calories": 55
+    },
+    {
+      "name": "Sweet Potato (100g)",
+      "calories": 86
+    },
+    {
+      "name": "Egg (1 large)",
+      "calories": 78
+    },
+    {
+      "name": "Egg Whites (100g)",
+      "calories": 52
+    },
+    {
+      "name": "Almonds (30g)",
+      "calories": 164
+    },
+    {
+      "name": "Peanut Butter (1 tbsp)",
+      "calories": 94
+    },
+    {
+      "name": "Whey Protein (1 scoop)",
+      "calories": 120
+    },
+    {
+      "name": "Greek Yogurt (150g)",
+      "calories": 100
+    },
+    {
+      "name": "Cottage Cheese (100g)",
+      "calories": 98
+    },
+    {
+      "name": "Banana (1 medium)",
+      "calories": 105
+    },
+    {
+      "name": "Apple (1 medium)",
+      "calories": 95
+    },
+    {
+      "name": "Avocado (100g)",
+      "calories": 160
+    },
+    {
+      "name": "Olive Oil (1 tbsp)",
+      "calories": 119
+    },
+    {
+      "name": "Tofu (100g)",
+      "calories": 76
+    },
+    {
+      "name": "Lentils (100g cooked)",
+      "calories": 116
+    },
+    {
+      "name": "Chickpeas (100g cooked)",
+      "calories": 164
+    },
+    {
+      "name": "Quinoa (100g cooked)",
+      "calories": 120
+    },
+    {
+      "name": "Pasta (100g cooked)",
+      "calories": 131
+    },
+    {
+      "name": "Whole Wheat Bread (1 slice)",
+      "calories": 69
+    },
+    {
+      "name": "Beef Steak (100g)",
+      "calories": 271
+    },
+    {
+      "name": "Tuna (100g canned)",
+      "calories": 132
+    },
+    {
+      "name": "Shrimp (100g)",
+      "calories": 99
+    },
+    {
+      "name": "Turkey Breast (100g)",
+      "calories": 147
+    },
+    {
+      "name": "Spinach (100g)",
+      "calories": 23
+    },
+    {
+      "name": "Carrots (100g)",
+      "calories": 41
+    },
+    {
+      "name": "Blueberries (100g)",
+      "calories": 57
+    },
+    {
+      "name": "Strawberries (100g)",
+      "calories": 32
+    },
+    {
+      "name": "Milk (1 cup, whole)",
+      "calories": 149
+    },
+    {
+      "name": "Almond Milk (1 cup)",
+      "calories": 39
+    },
+    {
+      "name": "Dark Chocolate (30g)",
+      "calories": 170
+    },
+    {
+      "name": "Protein Bar (average)",
+      "calories": 200
+    },
+    {
+      "name": "Idli (1 piece)",
+      "calories": 70
+    },
+    {
+      "name": "Dosa (1 piece)",
+      "calories": 133
+    },
+    {
+      "name": "Paneer (100g)",
+      "calories": 296
+    },
+    {
+      "name": "Dal (1 small bowl)",
+      "calories": 100
+    },
+    {
+      "name": "watermelon",
+      "calories": 200
+    },
+    {
+      "name": "egg biryani",
+      "calories": 500
+    }
+  ],
+  "meals": [
+    {
+      "id": "2853fb9e-bcd0-4842-87c9-c3224e9ececf",
+      "username": "testlight",
+      "date": "2026-04-22",
+      "food": "Oats",
+      "meal": "Breakfast",
+      "calories": 350,
+      "qty": 1
+    },
+    {
+      "id": "dbccf03f-a7d9-46c9-b969-16bfbe06a36d",
+      "username": "testlight",
+      "date": "2026-04-22",
+      "food": "Chicken Salad",
+      "meal": "Lunch",
+      "calories": 500,
+      "qty": 1
+    },
+    {
+      "id": "b280ce6f-e3bc-49e8-9077-22084341be38",
+      "username": "John",
+      "date": "2026-04-22",
+      "food": "pizza slice",
+      "meal": "Snack",
+      "calories": 570,
+      "qty": 2
+    },
+    {
+      "id": "5914c549-62d8-4e6d-94fa-797c41f7a6c6",
+      "username": "Teju",
+      "date": "2026-04-22",
+      "food": "Apple",
+      "meal": "Breakfast",
+      "calories": 190,
+      "qty": 2
+    },
+    {
+      "id": "3e970843-c39f-4bbe-9d55-7de88babefbd",
+      "username": "Teju",
+      "date": "2026-04-22",
+      "food": "Pizza Slice",
+      "meal": "Lunch",
+      "calories": 1140,
+      "qty": 4
+    },
+    {
+      "id": "15c7f5ec-045a-4338-bab3-1182189e0d27",
+      "username": "Bhavana",
+      "date": "2026-04-22",
+      "food": "Oats",
+      "meal": "Breakfast",
+      "calories": 300,
+      "qty": 1
+    },
+    {
+      "id": "72ca65e0-61d3-4c28-b827-9d3b284f4805",
+      "username": "Bhavana",
+      "date": "2026-04-22",
+      "food": "Chapati",
+      "meal": "Lunch",
+      "calories": 400,
+      "qty": 2
+    },
+    {
+      "id": "0645743f-6e60-4a97-9a3a-d17718b2ec87",
+      "username": "Bhavana",
+      "date": "2026-04-22",
+      "food": "Apple",
+      "meal": "Dinner",
+      "calories": 95,
+      "qty": 1
+    },
+    {
+      "id": "f465e7a2-47f0-4f05-ad30-1eacac8d0ade",
+      "username": "Bhavana",
+      "date": "2026-04-22",
+      "food": "Pizza Slice",
+      "meal": "Snack",
+      "calories": 285,
+      "qty": 1
+    },
+    {
+      "id": "fa7ae692-5059-478e-b591-c882ca30387d",
+      "username": "Ankithaa",
+      "date": "2026-04-22",
+      "food": "watermelon",
+      "meal": "Breakfast",
+      "calories": 200,
+      "qty": 1
+    },
+    {
+      "id": "9b1359d5-377e-430f-95d6-cfc9f5918ea4",
+      "username": "Ankithaa",
+      "date": "2026-04-22",
+      "food": "egg biryani",
+      "meal": "Lunch",
+      "calories": 500,
+      "qty": 1
+    }
+  ]
+}

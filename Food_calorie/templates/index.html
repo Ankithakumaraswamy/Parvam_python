@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="nav-links">
+    <a href="{{ url_for('index') }}">Dashboard</a>
+    <a href="{{ url_for('reports') }}">Reports</a>
+    <a href="{{ url_for('logout') }}" style="margin-left: auto;">Logout</a>
+</div>
+
+<div class="glass-panel main-dashboard">
+    <h1 class="title-glow">Nutrition <span>Hub</span></h1>
+    <p style="text-align: center; margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-muted);">
+        Welcome, <span style="color: var(--text-main); font-weight: 600;">{{ username }}</span> <br>
+        Daily Goal: <span style="color: var(--primary); font-family: 'Montserrat', sans-serif; font-weight: 800;">{{ goal }} kcal</span>
+    </p>
+
+    <div class="progress-container">
+        <div class="progress-header">
+            <span>Consumed: <span id="intake-text" style="color: var(--text-main); font-family: 'Montserrat';">{{ total_calories }}</span> kcal</span>
+            <span>Remaining: <span id="remaining-text" style="color: var(--secondary); font-family: 'Montserrat';">{{ remaining_calories }}</span> kcal</span>
+        </div>
+        <div class="progress-bar-bg">
+            <!-- Dynamic Preview Bar -->
+            <div id="preview-bar" class="progress-bar-preview" style="width: 0%;"></div>
+            
+            {% set percentage = (total_calories / goal * 100) %}
+            <div id="calorie-bar" class="progress-bar-fill {% if total_calories > goal %}exceeded{% endif %}" style="width: {{ [percentage, 100] | min }}%;"></div>
+        </div>
+        <div class="calorie-exceeded {% if total_calories > goal %}show{% endif %}" id="warning-msg">
+            ⚠️ CALORIE LIMIT EXCEEDED ⚠️
+        </div>
+    </div>
+    
+    <div style="margin-top: 2rem;">
+        <h2 style="font-size: 1rem; text-align: center; margin-bottom: 0.5rem; color: var(--text-muted);">MEAL BREAKDOWN</h2>
+        <div class="breakdown-grid">
+            <div class="breakdown-card">
+                <h3>Breakfast</h3>
+                <div class="val">{{ breakdown['Breakfast'] }}</div>
+            </div>
+            <div class="breakdown-card">
+                <h3>Lunch</h3>
+                <div class="val">{{ breakdown['Lunch'] }}</div>
+            </div>
+            <div class="breakdown-card">
+                <h3>Dinner</h3>
+                <div class="val">{{ breakdown['Dinner'] }}</div>
+            </div>
+            <div class="breakdown-card">
+                <h3>Snack</h3>
+                <div class="val">{{ breakdown['Snack'] }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="glass-panel">
+    <h2><span style="color: var(--primary);">+</span> Log Meal</h2>
+    <form method="POST" action="{{ url_for('add_food') }}" style="margin-top: 1.5rem;">
+        <div class="flex-row">
+            <div class="form-group" style="position: relative;">
+                <label for="food-item">Food Item Name</label>
+                <!-- Removed datalist in favor of advanced custom JS suggestions for fuzzy match -->
+                <input type="text" id="food-item" name="food" required placeholder="e.g., Chicken Breast, Oats" autocomplete="off">
+                <div id="autocomplete-list" style="position: absolute; width: 100%; background: var(--surface); border: 1px solid var(--border); border-top: none; z-index: 99; border-radius: 0 0 8px 8px; display: none; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="meal">Meal Type</label>
+                <select id="meal" name="meal" required>
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Dinner">Dinner</option>
+                    <option value="Snack">Snack</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="flex-row">
+            <div class="form-group">
+                <label for="calories">Calories per serving</label>
+                <input type="number" id="calories" name="calories" required placeholder="kcal">
+            </div>
+            
+            <div class="form-group">
+                <label for="qty">Quantity</label>
+                <input type="number" id="qty" name="qty" value="1" min="1" step="0.5" required>
+            </div>
+        </div>
+        
+        <div style="text-align: right; margin-bottom: 1rem; font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">
+            Entry Preview: <span id="entry-total" style="color: var(--primary); font-family: 'Montserrat'; font-size: 1.2rem; font-weight: 800;">0</span> kcal
+        </div>
+        
+        <button type="submit" id="log-btn">Log Food</button>
+    </form>
+</div>
+
+{% if meals %}
+<div class="glass-panel">
+    <h2 style="margin-bottom: 1rem;">Today's Logs <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">({{ today }})</span></h2>
+    <div style="overflow-x: auto;">
+        <table class="logs-table">
+            <thead>
+                <tr>
+                    <th>Meal</th>
+                    <th>Food</th>
+                    <th>Cals</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in meals %}
+                <tr class="log-row">
+                    <td><span class="meal-badge">{{ m.meal }}</span></td>
+                    <td style="font-weight: 600; color: var(--text-main);">{{ m.food }}</td>
+                    <td>{{ m.calories }}</td>
+                    <td>{{ m.qty }}</td>
+                    <td style="color: var(--primary); font-family: 'Montserrat'; font-weight: 800;">{{ (m.calories|float * m.qty|float)|round|int }}</td>
+                    <td>
+                        <div class="action-forms">
+                            <button class="btn-small" style="background: transparent; border: 1px solid var(--secondary); color: var(--secondary);" onclick="editLog('{{ m.id }}', '{{ m.food }}', '{{ m.meal }}', '{{ m.calories }}', '{{ m.qty }}')">Edit</button>
+                            <form method="POST" action="{{ url_for('delete_log', log_id=m.id) }}" style="display: inline;" onsubmit="return confirm('Delete this log?');">
+                                <button type="submit" class="btn-small btn-danger">Del</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Edit Modal -->
+<div id="edit-modal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px);">
+    <div class="glass-panel" style="background: var(--surface); max-width: 500px; padding: 2rem; margin: 0 1rem;">
+        <h2 style="margin-bottom: 1.5rem;">Edit Log</h2>
+        <form id="edit-form" method="POST" action="">
+            <div class="form-group">
+                <label>Food</label>
+                <input type="text" id="edit-food" name="food" required>
+            </div>
+            <div class="form-group">
+                <label>Meal Type</label>
+                <select id="edit-meal" name="meal" required>
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Dinner">Dinner</option>
+                    <option value="Snack">Snack</option>
+                </select>
+            </div>
+            <div class="flex-row">
+                <div class="form-group">
+                    <label>Calories</label>
+                    <input type="number" id="edit-calories" name="calories" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="edit-qty" name="qty" step="0.5" required>
+                </div>
+            </div>
+            <div class="flex-row" style="margin-top: 1rem;">
+                <button type="submit">Save Changes</button>
+                <button type="button" class="btn-danger" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function editLog(id, food, meal, cal, qty) {
+        document.getElementById('edit-form').action = '/edit_log/' + id;
+        document.getElementById('edit-food').value = food;
+        document.getElementById('edit-meal').value = meal;
+        document.getElementById('edit-calories').value = cal;
+        document.getElementById('edit-qty').value = qty;
+        document.getElementById('edit-modal').style.display = 'flex';
+    }
+    
+    function closeEditModal() {
+        document.getElementById('edit-modal').style.display = 'none';
+    }
+
+    const totalCalories = {{ total_calories }};
+    const goal = {{ goal }};
+    
+    // Play a beep sound using Web Audio API if calorie limit is exceeded initially
+    if (totalCalories > goal) {
+        setTimeout(() => {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                for (let i = 0; i < 3; i++) {
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(800 + (i*100), audioCtx.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    oscillator.start(audioCtx.currentTime + (i * 0.25));
+                    oscillator.stop(audioCtx.currentTime + (i * 0.25) + 0.2);
+                }
+            } catch (e) {
+                console.log("Audio play failed: ", e);
+            }
+        }, 500);
+    }
+
+    // Dynamic Tracking & Auto-suggestions
+    const foodInput = document.getElementById('food-item');
+    const autocompleteList = document.getElementById('autocomplete-list');
+    const caloriesInput = document.getElementById('calories');
+    const qtyInput = document.getElementById('qty');
+    const entryTotalSpan = document.getElementById('entry-total');
+    const previewBar = document.getElementById('preview-bar');
+    const remainingText = document.getElementById('remaining-text');
+    
+    const foods = {{ foods | tojson }};
+    
+    function updatePreviews() {
+        const cal = parseFloat(caloriesInput.value) || 0;
+        const qty = parseFloat(qtyInput.value) || 0;
+        const entryTotal = Math.round(cal * qty);
+        entryTotalSpan.innerText = entryTotal;
+        
+        // Update progress bar preview dynamically
+        const newTotal = totalCalories + entryTotal;
+        let previewPercent = (newTotal / goal) * 100;
+        if (previewPercent > 100) previewPercent = 100;
+        
+        previewBar.style.width = previewPercent + "%";
+        
+        // Update remaining text preview
+        const newRemaining = Math.max(0, goal - newTotal);
+        remainingText.innerText = newRemaining;
+        
+        if (newTotal > goal) {
+            remainingText.style.color = 'var(--danger)';
+            previewBar.style.background = 'rgba(255, 42, 84, 0.4)';
+        } else {
+            remainingText.style.color = 'var(--secondary)';
+            previewBar.style.background = 'rgba(255, 255, 255, 0.2)';
+        }
+    }
+    
+    // Fuzzy matching for food suggestions
+    foodInput.addEventListener('input', function(e) {
+        const val = this.value.toLowerCase();
+        autocompleteList.innerHTML = '';
+        if (!val) {
+            autocompleteList.style.display = 'none';
+            return;
+        }
+        
+        let matches = foods.filter(f => f.name.toLowerCase().includes(val));
+        
+        if (matches.length > 0) {
+            autocompleteList.style.display = 'block';
+            matches.slice(0, 10).forEach(match => { // limit to 10
+                const item = document.createElement('div');
+                item.style.padding = '10px 15px';
+                item.style.cursor = 'pointer';
+                item.style.borderBottom = '1px solid var(--border)';
+                item.innerHTML = `<strong>${match.name}</strong> <span style="float:right; color:var(--text-muted);">${match.calories} kcal</span>`;
+                
+                // Hover effect
+                item.addEventListener('mouseover', () => item.style.background = 'var(--surface-light)');
+                item.addEventListener('mouseout', () => item.style.background = 'transparent');
+                
+                item.addEventListener('click', function() {
+                    foodInput.value = match.name;
+                    caloriesInput.value = match.calories;
+                    autocompleteList.innerHTML = '';
+                    autocompleteList.style.display = 'none';
+                    updatePreviews();
+                });
+                autocompleteList.appendChild(item);
+            });
+        } else {
+            autocompleteList.style.display = 'none';
+        }
+        
+        updatePreviews();
+    });
+    
+    // Hide autocomplete when clicking outside
+    document.addEventListener('click', function(e) {
+        if (e.target !== foodInput && e.target !== autocompleteList) {
+            autocompleteList.style.display = 'none';
+        }
+    });
+    
+    caloriesInput.addEventListener('input', updatePreviews);
+    qtyInput.addEventListener('input', updatePreviews);
+</script>
+{% endblock %}
